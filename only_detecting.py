@@ -37,6 +37,7 @@ template = cv2.imread(TEMPLATE,cv2.IMREAD_GRAYSCALE)
 blurredTemplate = cv2.GaussianBlur(template,(5,5),0)
 w, h = template.shape[::-1]
 radius = int(max([w/2, h/2]))
+
 # 加入倾斜的模板
 
 ##程序主循环##
