@@ -6,12 +6,12 @@ import time
 import math
 
 ########## 定义变量 ##########
-CAMERA = 0#'walk-original1.avi'
+VIDEONUMBER = 6
+CAMERA = 'walk' + str(VIDEONUMBER) + '.avi'
 VIDEOFILE = 'walk'
-VIDEONUMBER = 1
 fps = 20
 TEMPLATE = 'template.jpg'
-threshold = 0.85
+threshold = 0.83
 es = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 4))
 background = None
 ##############################
@@ -51,7 +51,8 @@ cv2.setMouseCallback("walk-original", onMouse)
 size = (int(cameraCapture.get(cv2.CAP_PROP_FRAME_WIDTH)),
         int(cameraCapture.get(cv2.CAP_PROP_FRAME_HEIGHT)))
 
-while os.path.exists('original/' + VIDEOFILE + str(VIDEONUMBER) + '.avi'):
+while os.path.exists('original/' + VIDEOFILE + \
+    str(VIDEONUMBER) + '.avi'):
     VIDEONUMBER = VIDEONUMBER + 1
 
 # 原始视频
@@ -86,7 +87,7 @@ while success and cv2.waitKey(1) == -1 and not clicked:
 
     frameCopy = frame.copy()
     grayFrame = cv2.cvtColor(frameCopy,cv2.COLOR_BGR2GRAY)
-    blurredFrame = cv2.GaussianBlur(grayFrame,(21,21),0)
+    blurredFrame = cv2.GaussianBlur(grayFrame,(5,5),0)
 
     # 优化方向：用HSV颜色格式辅助判断
     # HSVFrame = cv2.cvtColor(Frame的另一个copy,cv2.COLOR_BGR2HSV)
@@ -102,42 +103,47 @@ while success and cv2.waitKey(1) == -1 and not clicked:
         if cv2.contourArea(c) < 40000:
             continue
         (zx, zy, zw, zh) = cv2.boundingRect(c)
-        cv2.rectangle(frameCopy, (zx, zy), (zx+zw, zy+zh), (0, 255, 0), 2)
+        cv2.rectangle(frameCopy, (zx, zy), (zx+zw, zy+zh), \
+            (0, 255, 0), 2)
         break
 
     # res是当前帧上所有像素的评分矩阵
-    res = cv2.matchTemplate(blurredFrame,template,cv2.TM_CCOEFF_NORMED)
+    res = cv2.matchTemplate(blurredFrame,blurredTemplate,\
+        cv2.TM_CCOEFF_NORMED)
 
     centers = []
     # loc包括两个array，一个表示行，另一个是列
     loc = np.where( res >= threshold )
     for pt in zip(*loc[::-1]):  # pt是（x，y），按y从小到大排列
-        center = (int(pt[0] + w/2), int(pt[1] + h/2))  # （x，y）坐标系
-        if(center[0] >= 640 or center[1] >= 480):
-            continue
+        center = (int(pt[0] + w/2), int(pt[1] + h/2)) #（x，y）坐标系
+        # if(center[0] >= 640 or center[1] >= 480):
+        #     continue
         invalidPoint = 0
-        if centers:
-            # 判断目标点是否在前景区域范围内
-            if center[0] < zx or center[0] > zx+zw \
-                or center[1] < zy or center[1] > zy+zh:
-                invalidPoint = 1
-            else:
-                # 非极大值抑制
-                for testpt in centers:
-                    # 判断：高度不能相近
-                    # if abs(testpt[1] - center[1]) < 20:
-                    #     invalidPoint = 1
-                    #     break
-                    # 判断：距离不能相近
-                    if ((testpt[0] - center[0])**2 + (testpt[1] - center[1])**2)**0.5 < 30:
-                        invalidPoint = 1
-                        break
-                    # 核心颜色判断（HSV）
-                    # b, g, r = frameCopy[center[1]-1][center[0]-1]
-                    # h, s, v = rgb2hsv(b, g, r)
-                    # if s < 0.1 or v < 0.9:
-                    #     invalidPoint = 1
-                    #     break
+        # 判断目标点是否在前景区域范围内
+        if center[0] < zx or center[0] > zx+zw \
+            or center[1] < zy or center[1] > zy+zh:
+            invalidPoint = 1
+        elif centers:
+            # 非极大值抑制
+            for testpt in centers:
+                # 判断：高度不能相近
+                # if abs(testpt[1] - center[1]) < 20:
+                #     invalidPoint = 1
+                #     break
+
+                # 判断：距离不能相近
+                if ((testpt[0] - center[0])**2 + \
+                    (testpt[1] - center[1])**2)**0.5 < 30:
+                    invalidPoint = 1
+                    break
+
+                # 核心颜色判断（HSV）
+                # b, g, r = frameCopy[center[1]-1][center[0]-1]
+                # h, s, v = rgb2hsv(b, g, r)
+                # if s < 0.1 or v < 0.9:
+                #     invalidPoint = 1
+                #     break
+
         if not invalidPoint:
             centers.append(center)        
 

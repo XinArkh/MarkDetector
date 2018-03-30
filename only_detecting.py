@@ -4,12 +4,12 @@ import os
 import time
 
 ########## 定义变量 ##########
-CAMERA = 'walk6.avi'
-VIDEOFILE = 'walk'
 VIDEONUMBER = 1
+CAMERA = 'walk' + str(VIDEONUMBER) + '.avi'
+VIDEOFILE = 'walk'
 fps = 20
 TEMPLATE = 'template.jpg'
-threshold = 0.85
+threshold = 0.83
 es = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (9, 4))
 background = None
 ##############################
