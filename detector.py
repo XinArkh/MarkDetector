@@ -146,17 +146,21 @@ class detector:
 
 
     def _close(self):
-        self.cameraCapture.release()
-        self.videoWriter.release()
-        cv2.destroyAllWindows()
-        self.position.close()
+        try:
+            self.cameraCapture.release()
+            self.videoWriter.release()
+            cv2.destroyAllWindows()
+            self.position.close()
+        except:
+            raise
 
 
-    def run(self, threshold=0.9, area=40000, bgPath=None):
+    def run(self, threshold=0.9, bgPath=None, area=40000):
         self.bgPath = bgPath
         self.bg = None
         if self.bgPath:
             self.bg = cv2.imread(self.bgPath, cv2.IMREAD_GRAYSCALE)
+            self.bg = cv2.GaussianBlur(self.bg, (5, 5), 0)
 
         success, self.frame = self.cameraCapture.read()
         while success and cv2.waitKey(1) == -1:
@@ -189,7 +193,7 @@ class detector:
         self._close()
 
 
-    def data2angle(self):
+    def data2angle(self, right=True):
         f = open('data/' + self.name + str(self.number) + '.txt', 
                 'r', encoding='utf-8')
         if not os.path.isdir('angle'):
@@ -222,6 +226,15 @@ class detector:
             angle_t = np.arccos(cos_t)*180/np.pi
             angle_a = np.arccos(cos_a)*180/np.pi
             # print(angle_t, angle_a)
+
+            angle_a = abs(angle_a)
+            if right:
+                if x2 < x1:
+                    angle_t = -abs(angle_t)
+            else:
+                if x2 > x1:
+                    angle_t = -abs(angle_t)
+
             output.write(str(angle_t)+' '+str(angle_a)+'\n')
 
         f.close()
@@ -229,9 +242,9 @@ class detector:
 
 
 if __name__ == '__main__':
-    d = detector(1, 'walk', 1)
+    d = detector(0, 'walk', 1)
     d.getTemplate('template.jpg')
-    d.saveVideo()
-    d.saveData()
-    d.run(0.9)
-    d.data2angle()
+    # d.saveVideo()
+    # d.saveData()
+    d.run(threshold=0.8)
+    # d.data2angle(right=True)
