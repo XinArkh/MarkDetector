@@ -84,7 +84,7 @@ t1=(t1-t1(1))*1e-9;
 b22(1)=0;
 for i=2:2315
     hh= ceil(t1(i)/24.007728128*454);
-    b22(i)= b2( hh);
+    b22(i)= b2(hh);
 end
 %subplot(3,2,4)
 figure(4)
@@ -221,7 +221,7 @@ set(l,'FontName','Palatino Linotype')
 subplot(2,2,2)
 plot(t1(200:2315),Y(200:2315),'LineWidth',2,'Color','red')
 hold on
-plot(t12(200:2315),a(777-10:2892-10,1)-5,'Color',[1 0.8 0],'LineWidth',2)
+plot(t12(200:2315),data1,'Color',[1 0.8 0],'LineWidth',2)
 ylabel('angle(бу)','FontName','Palatino Linotype');
 xlabel({'t(s)','(b) From IMU Individual Kalman Filter'},'FontName','Palatino Linotype');
 axis([2 15 -80 100])
